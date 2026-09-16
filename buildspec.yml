@@ -1,45 +1,23 @@
 version: 0.2
 
 phases:
-
   pre_build:
     commands:
-      - echo "AWS Region: $AWS_DEFAULT_REGION"
-      - echo "AWS Account: $(aws sts get-caller-identity --query Account --output text)"
+      - echo "Getting AWS account ID"
       - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - echo "AWS account is $AWS_ACCOUNT_ID"
+      - echo "AWS region is $AWS_DEFAULT_REGION"
       - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/openwa
-      - echo "ECR URI: $ECR_URI"
+      - echo "Logging in to ECR"
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
 
   build:
     commands:
-      - echo "Building Docker image..."
+      - echo "Building Docker image"
       - docker build -t $ECR_URI:latest .
 
   post_build:
     commands:
-      - echo "Pushing Docker image..."
+      - echo "Pushing Docker image to ECR"
       - docker push $ECR_URI:latest
-      - echo "DONE"version: 0.2
-
-phases:
-
-  pre_build:
-    commands:
-      - echo "AWS Region: $AWS_DEFAULT_REGION"
-      - echo "AWS Account: $(aws sts get-caller-identity --query Account --output text)"
-      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/openwa
-      - echo "ECR URI: $ECR_URI"
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_URI
-
-  build:
-    commands:
-      - echo "Building Docker image..."
-      - docker build -t $ECR_URI:latest .
-
-  post_build:
-    commands:
-      - echo "Pushing Docker image..."
-      - docker push $ECR_URI:latest
-      - echo "DONE"
+      - echo "Build completed successfully"
